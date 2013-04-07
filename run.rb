@@ -1,6 +1,6 @@
 # encoding=utf-8
 # very silly argument parsing code
-clients = ["procedural","object-oriented"]
+clients = ["procedural","object-oriented","structured"]
 commands = ["test","run"]
 
 flags, command = ARGV.partition {|a| /^--/ =~ a }
@@ -28,11 +28,12 @@ require "color"
 include Color
 
 def want text, from
-  got = from.expect(text,1)
+  got = from.expect(text,2)
   if got.nil?
     puts in_red("Error:") + " expected '#{text}' but never saw it! #{in_red("✘")}"
     exit
   else
+    puts got if ENV["DEBUG"]
     puts "#{in_green("Saw")} #{text} #{in_green("✔")}"
   end
 end
