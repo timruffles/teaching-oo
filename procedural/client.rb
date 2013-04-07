@@ -2,18 +2,24 @@ require "set"
 require "color"
 include Color
 
+# NOTE this isn't quite procedural as we're using the `while` instead of GOTOs
+# NOTE DO NOT take ANY of the code in this file as an example of how to 
+# write Ruby, Javascript or any modern code
+# this is to give you a flavour of the low-level 'HOW TO DO IT' not 'WHAT I WANT' nature of procedural code
+# NOTE to restate: this file is HOW NOT TO DO IT :)
+
 # DATA
 
-commands = {
-  "feed" => {
+commands = [
+  {
     "description" => "Your feed",
     "key" => "f"
   },
-  "message" => {
+  {
     "description" => "Send message",
     "key" => "m"
   }
-}
+]
 
 
 minutes = minute = 60
@@ -51,22 +57,32 @@ platforms = {
 puts colorize("Welcome to multi-message client 1.0",:blue)
 
 # main loop
-loop do
+while(true) do
 
   puts "What would you like to do?"
 
   # print a left justified list of commands with descriptions
-  max_just = commands.map {|_,command| command["description"].length }.max
-  commands.each do |name,command|
-    puts "#{command["description"].ljust(max_just)}: #{command["key"]}"
+  max_len = 0
+  index = 0
+  while(index < commands.length) do
+    length = commands[index]["description"].length 
+    max_len = length if length > max_len
+    index += 1
+  end
+
+  index = 0
+  while(index < commands.length) do
+    command = commands[index]
+    puts "#{command["description"].ljust(max_len)}: #{command["key"]}"
+    index += 1
   end
 
   # this reads from a special 'file' that the console writes into
   # and reads from
   terminal = IO.sysopen("/dev/tty", "w+")
-  command = IO.open(terminal,"w+") do |io|
-    io.gets.strip
-  end
+  io = IO.open(terminal,"w+")
+  command = io.gets.strip
+  io.close
 
   puts "OK - #{command}"
 
@@ -76,8 +92,11 @@ loop do
     # show feed
     puts
     puts "Your messages:"
-    feed.each do |feed_item|
+    index = 0
+    while(index < feed.length) do
+      feed_item = feed[index]
       puts "#{feed_item["message"]} : #{colorize(feed_item["sent_at"].to_s,:blue)}"
+      index += 1
     end
     puts
 
@@ -87,20 +106,22 @@ loop do
     puts
     puts "Enter message:"
     terminal = IO.sysopen("/dev/tty", "w+")
-    message = IO.open(terminal,"w+") do |io|
-      io.gets.strip
-    end
+    io = IO.open(terminal,"w+")
+    message = io.gets.strip
+    io.close
 
     puts colorize("Your message:",:blue) + " #{message}"
 
     # filter only platforms we can send messages on
+    # NOTE can't do this procedurally in Ruby - this is method call
     sendable = platforms.select do |_,config|
       config["capabilities"].include? "write"
     end
 
-    loop do
+    while(true) do
 
       # format platforms with a single character to choose them
+      # NOTE can't iterate hashes procedurally in Ruby
       technique_options = sendable.map do |platform,_|
         "#{platform} (#{platform[0]})"
       end
@@ -108,9 +129,9 @@ loop do
       # how does user wish to send?
       puts "Send by: #{technique_options.join(", ")}"
       terminal = IO.sysopen("/dev/tty", "w+")
-      via = IO.open(terminal,"w+") do |io|
-        io.gets.strip
-      end
+      io = IO.open(terminal,"w+")
+      via = io.gets.strip
+      io.close
 
       if via == "t"
         puts "Sending '#{message}' via Twitter..."

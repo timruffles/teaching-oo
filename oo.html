@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<head>
+  
+    <link rel="stylesheet" href="reveal/css/reveal.min.css">
+    <link rel="stylesheet" href="reveal/css/theme/default.css" id="theme">
+
+    <!-- For syntax highlighting reveal/-->
+    <link rel="stylesheet" href="reveal/lib/css/zenburn.css">
+</head>
+
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+<section data-markdown class="first-page">
+<script type="text/template">
+
+  #  Object-oriented programming
+
+  <a href="http://twitter.com/{{ instructor_twitter }}">{{ instructor }}</a>
+
+</script>
+</section>
+
+<section class="large-text">
+  <p>Data + algorithms = programs</p>
+
+  <p class="explanation">without the fancy word:</a>
+
+  <p>Data + instructions = programs</p>
+</section>
+
+<section data-markdown class="large-text"><script type="text/template">
+
+  Computers are machines that perform one instruction at a time.
+
+  We want to express things at a higher level than the machine.
+  
+  We want to write code at the level of our intentions.
+
+</script></section>
+
+<section data-markdown ><script type="text/template">
+
+  ##  A chronology
+
+  1. Procedural code - lists of instructions with ways to jump to specific line
+  1. Structured code - control structures & functions used to structure jumps
+  1. Object-oriented code - programs modelled as system of message-exchanging cells
+
+</script></section>
+
+<section data-markdown ><script type="text/template">
+
+  ##  Procedural
+
+  We are at the level of the machine. We are providing every step (the how), and we use labels and commands to jump to a label.
+
+  ```
+  ; we've put currentTime in one register, and triggerAt in another
+  ; perform comparison
+  cmp ecx, edx        
+  ; jump to _TriggerAlarm if great or equal
+  jge _TriggerAlarm   
+
+  ; if we're here, we didn't jump, so we must still be before alarm time
+  
+  _TriggerAlarm:
+  ; ok current time is >= now
+  ```
+
+</script></section>
+
+<section data-markdown ><script type="text/template">
+
+  ##  Structured
+
+  Common control structures like loops turned into language features.
+
+  Functions formalize 'go here, do this, and store result over there so I can get it' with paramters and return values.
+
+  ```
+  if(currentTime() >= alarmSetAt) {
+    triggerAlarm()
+  }
+  ```
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+  ##  Why did we move from procedural to structured?
+
+  Low-level - telling computer how to perform comparisons, a lot of work
+
+  Unstructured - in 1000 line program, can jump to anywhere from anywhere
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Why did we add Object Orientation?
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  > The key in making great and growable systems 
+  is to design how its modules communicate 
+  > rather than what their internal properties and
+  > behaviors should be
+
+  Alan Kay
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  > cells ... only able to communicate with messages
+
+  Alan Kay
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ##  Philosophy
+  
+  > 1. EverythingIsAnObject.
+  > 2. Objects communicate by sending and 
+  > receiving messages (in terms of objects).
+
+  &
+
+  > local storage ... and hiding of state
+
+  Alan Kay
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ##  More simply
+
+  1. everything is an object
+  1. messaging,
+  1. local storage ... and hiding of state
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Everything is an object
+
+  True in Ruby, true(ish) in Javascript
+
+  ```
+  (1).toString(); # js
+  null.toString() # typeError: Cannot call method 'toString' of null
+
+  1.to_s()        # ruby
+  nil.nil?        # true in ruby 
+  ```
+
+  Not in some languages, where strings, arrays & numbers are 'dumb data' (eg C)
+
+  ```
+  // get length of string
+  strlen("I am a string"); 
+  // byte length arthimetic just to get length of array
+  arrayLen = sizeof(things)/sizeof(things[0]);
+  // simplified
+  sprintf("%d",15);
+  ```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ##  Messaging
+
+  - Now data/behaviour is split into cells, send messages to get data
+
+  - We communicate intentions, the receiver actually does it.
+
+  - Separation of knowledge & concerns - one only knows what it wants, not how it's done
+
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Sending messages is easy
+
+  - In Ruby, `1.to_s` means send `:to_s` to our Fixnum object.
+
+  - To get an Array's length, we send the `:length` message.
+
+  - So `array.length` means "send :length to the array" and we get the response
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+  ##  Local storage & hiding of state
+
+  - State = how many points in game, friends on FB, much ££ in account
+
+  - If every bit of the program can alter every bit of state, nightmare
+
+  - Like cells, we have a 'cell wall' around bits of state, & others can only _ask_ to change via messages
+
+
+</script></section>
+
+<section data-markdown ><script type="text/template">
+
+  ##  Object oriented version of alarm
+
+  We send messages between objects.
+
+  Objects store data and define messages you can send them to change or view that data.
+
+  ```
+  class Alarm
+    def hear time
+      trigger if time >= self.trigger_at
+    end
+  end
+
+  alarm = Alarm.new("20:20")
+  clock.onTick {|time| alarm.hear(time) }
+  ```
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+  ##  Object orientation is one solution to certain pains
+
+  - Let's look at a reasonable program (150-250 lines)
+
+  - Hard to compare paradigms of coding in shorter code
+
+  - Just reading for now
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+  ## Code example
+
+  - Small Twitter/FB/Email client
+
+  - Non-functional, all faked
+
+  - Command line application
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Run by
+
+  ```
+  ruby run --procedural
+  ruby test --procedural
+  ```
+
+  - Three examples: procedural, structured, object-oriented
+  - Use `test` to check it still works after modification
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## First read the procedural & structured
+
+  - To see what problems Kay was solving
+
+  - NB the 'procedural' file is HOW NOT TO DO IT
+
+  - Note the very low level, 'how to do it' flavour of procedural code
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Let's read!
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+  ## Object orientation is a way of thinking
+
+  - It's possible to write procedural code in OO (but don't)
+
+  - Just like you don't speak French with English grammar, it's not a great idea to write Ruby in a procedural style
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Where do we get objects?
+
+  - We define classes of objects, then create instances of them
+  - Titanic is an instance of the class `Film` (actually of `BadFilm`)
+  - Think about the messages we need to deal with, & define methods
+  - Each object can receive only messages defined in its class
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Syntax
+
+  - `initialize` is sent to all fresh instances of our class
+  - data hidden inside our object is stored in a variable prefixed with `@`
+
+  ```
+  class User
+    def initialize(title, name)
+      @title = title
+      @name = name
+    end
+    def formatted_name
+      "#{@title} #{@name}"
+    end
+  end
+
+  matz = User.new("Mr","Matz")
+  puts(matz.formatted_name()) # "Mr Matz"
+  ```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Syntax to goals
+
+  - …define classes of objects…create instances of them
+  - Titanic is an instance of the class `Film`
+  - think about the messages we need to deal with…define methods
+  - object can receive…messages defined in its class
+
+  ```ruby
+  class Film
+    def initialize(is_called,awful)
+      @is_called = is_called
+      @awful = awful
+    end
+    def name
+      @is_called
+    end
+    def bad?
+      @awful
+    end
+  end
+  titanic = BadFilm.new("titanic")
+  titanic.bad? # true
+  ```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Messages
+
+  - Inside the body of a method we are inside the object
+  - Inside the object we can access its hidden data `@`
+  - So just like functions, methods are code we wish to run on demand
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Summary
+
+  - We create objects that accept messages
+  - Objects store state inside them, accessed via messages
+  - They can contain data and algorithms, or just algorithms
+  - Ruby objects must acccept messages or we can't interact with them at all
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Exercises
+
+  - First on syntax
+  - Then we'll extend our Twitter/Email/FB client
+  - System thinking
+
+</script></section>
+
+</div>
+</div>
+
+<script src="reveal/lib/js/head.min.js"></script>
+<script src="reveal/js/reveal.min.js"></script>
+<script>
+  Reveal.initialize({
+
+    // Display controls in the bottom right corner
+    controls: false,
+
+    // Display a presentation progress bar
+    progress: true,
+
+    // Push each slide change to the browser history
+    history: true,
+
+    // Enable keyboard shortcuts for navigation
+    keyboard: true,
+
+    // Enable the slide overview mode
+    overview: true,
+
+    // Vertical centering of slides
+    center: true,
+
+    // Loop the presentation
+    loop: false,
+
+    // Change the presentation direction to be RTL
+    rtl: false,
+
+    // Number of milliseconds between automatically proceeding to the
+    // next slide, disabled when set to 0, this value can be overwritten
+    // by using a data-autoslide attribute on your slides
+    autoSlide: 0,
+
+    // Enable slide navigation via mouse wheel
+    mouseWheel: false,
+
+    // Apply a 3D roll to links on hover
+    rollingLinks: false,
+
+    // Transition style
+    transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+    dependencies: [
+        // Cross-browser shim that fully implements classList - https://github.com/eligrey/classList.js/
+        { src: 'reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+
+        // Interreveal/pret Markdown in <section> elements
+        { src: 'reveal/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+
+        // Syntareveal/x highlight for <code> elements
+        { src: 'reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+
+        // Zoom reveal/in and out with Alt+click
+        { src: 'reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+
+        // Speakreveal/er notes
+        // { src: 'reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+
+        // Remotreveal/e control your reveal.js presentation using a touch device
+        // { src: 'reveal/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+    ]
+
+  });
+</script>
+</body>

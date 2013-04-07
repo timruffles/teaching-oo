@@ -3,10 +3,9 @@ require "color"
 include Color
 
 class Message
-  def initialize message, sent_at, user
+  def initialize message, sent_at
     @message = message
     @sent_at = sent_at
-    @user = user
   end
   def message
     @message
@@ -22,11 +21,8 @@ class Platform
     @name = name
     @capabilities = Set.new(capabilities)
   end
-  def name
-    @name
-  end
-  def send msg
-    puts "Sending '#{msg}' via #{name}"
+  def send
+    puts "Sending by #{name}"
   end
   def can? ability
     @capabilities.include? ability
@@ -41,11 +37,8 @@ class OptionSet
   def commands
     @options.keys
   end
-  def formatted_choice flag
-    flags_to_commands[flag.downcase]
-  end
   def choice flag
-    @options[flags_to_commands[flag.downcase]]
+    options[flags_to_commands[flag]]
   end
   def formatted_choices
     max_just = commands.map {|option| option.length }.max
@@ -56,12 +49,12 @@ class OptionSet
   end
   def flags_to_commands
     commands.inject({}) do |flags_to_values,command|
-      flags_to_values[command[0].downcase] = command
+      flags_to_values[command[0]] = command
       flags_to_values  
     end
   end
   def flags
-    flags_to_commands.keys
+    flags_to_values.keys
   end
   def valid? flag
     !!choice(flag)
@@ -72,7 +65,7 @@ class Ui
   def initialize tty
     @tty = tty
   end
-  def puts msg = ""
+  def puts msg
     @tty.puts msg
   end
   def gets
@@ -95,17 +88,29 @@ class Ui
 
 end
 
-class TopMenuUi < Ui
+class TopMenu < UI
   def initialize tty, commands
     @tty = tty
     @commands = commands
   end
-  def run
+  def call
 
     welcome
 
     loop do
-      main_command
+
+      command = main_command tty
+      
+      puts "OK - #{command}"
+      choice = options.choice command
+
+      unless choice
+        colorize("Woops - I don't know how to '#{command}'",:red)
+        break
+      end
+
+      choice.run
+
     end
   end
   def welcome
@@ -120,16 +125,7 @@ class TopMenuUi < Ui
       puts formatted
     end
    
-    command = terminal_read
-    choice = options.choice command
-
-    unless choice
-      colorize("Woops - I don't know how to '#{command}'",:red)
-      return
-    end
-
-    puts "OK - #{options.formatted_choice command}"
-    choice.run
+    terminal_read
   end
 end
 
@@ -138,11 +134,11 @@ class FeedUi < Ui
     @tty = tty
     @feed = feed
   end
-  def run
+  def call
     # show feed
     puts
     puts "Your messages:"
-    @feed.each do |feed_item|
+    FEED.each do |feed_item|
       puts "#{feed_item.message} : #{colorize(feed_item.sent_at.to_s,:blue)}"
     end
     puts
@@ -150,26 +146,25 @@ class FeedUi < Ui
 end
 
 class MessageUi < Ui
-  def initialize tty, platforms
+  def initialize tty, feed
     @tty = tty
     @platforms = platforms
   end
-
-  def run
+  def call
     # capture message
     puts
-    message = ask(@tty,"Enter message:")
+    message = ask(tty,"Enter message:")
 
     puts colorize("Your message:",:blue) + " #{message}"
 
     loop do
 
-      platforms_to_names = platforms_that_can("write").reduce({}) do |by_name,platform|
+      platforms_to_names = platforms_that_can("write").inject do |by_name,platform|
         by_name[platform.name] = platform
         by_name
       end
 
-      options = OptionSet.new(platforms_to_names)
+      options = OptionSet.new(platforms_to_names))
 
       # how does user wish to send?
       puts "Send by: #{options.formatted_choices.join(", ")}"
@@ -186,7 +181,7 @@ class MessageUi < Ui
 
   def platforms_that_can capability
     # filter only platforms we can send messages on
-    @platforms.select do |platform|
+    platforms_that_can.select do |platform|
       platform.can? capability
     end
   end
@@ -196,26 +191,31 @@ end
 def main tty
   minutes = minute = 60
   hours = hour = 60 * minutes
+  feed = [
+    Message.new("Hi there @you, great to see you last night",Time.now - 5.3 * hours),
+    Message.new("@you great talk on Ruby, get in touch with Google HR!",Time.now - 8.1 * hours)
+  ]
 
-  feed_ui = FeedUi.new(tty,[
-    Message.new("Hi there @you, great to see you last night",Time.now - 5.3 * hours,"lepope"),
-    Message.new("@you great talk on Ruby, get in touch with Google HR!",Time.now - 8.1 * hours,"sbrin"),
-    Message.new("Ruby 2 is going to be great!",Time.now - 8.1 * hours,"matz")
-  ])
+
+  feed_ui = FeedUi.new(tty,feed)
+
 
   message_ui = MessageUi.new(tty,[
-    Platform.new("Twitter",["read","follow","write"]),
-    Platform.new("Facebook",["read","follow","write"]),
-    Platform.new("RSS",["read","follow"]),
-    Platform.new("Email",["read","write"])
+    Platform.new("twitter",["read","follow","write"]),
+    Platform.new("facebook",["read","follow","write"]),
+    Platform.new("rss",["read","follow"]),
+    Platform.new("email",["read","write"])
   ])
 
-  menu = TopMenuUi.new(tty,{
-    "feed" => feed_ui,
-    "message" => message_ui
+  TopMenuUi.new({
+    tty,
+    {
+      "Your feed" => feed_ui,
+      "Send message" => message_ui
+    }
   })
 
-  menu.run
+  TopMenuUi.call
 end
 
 main(STDOUT)
