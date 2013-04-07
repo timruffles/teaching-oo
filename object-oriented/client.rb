@@ -3,9 +3,10 @@ require "color"
 include Color
 
 class Message
-  def initialize message, sent_at
+  def initialize message, sent_at, user
     @message = message
     @sent_at = sent_at
+    @user = user
   end
   def message
     @message
@@ -39,6 +40,9 @@ class OptionSet
   end
   def commands
     @options.keys
+  end
+  def formatted_choice flag
+    flags_to_commands[flag.downcase]
   end
   def choice flag
     @options[flags_to_commands[flag.downcase]]
@@ -124,7 +128,7 @@ class TopMenuUi < Ui
       return
     end
 
-    puts "OK - #{command}"
+    puts "OK - #{options.formatted_choice command}"
     choice.run
   end
 end
@@ -194,8 +198,9 @@ def main tty
   hours = hour = 60 * minutes
 
   feed_ui = FeedUi.new(tty,[
-    Message.new("Hi there @you, great to see you last night",Time.now - 5.3 * hours),
-    Message.new("@you great talk on Ruby, get in touch with Google HR!",Time.now - 8.1 * hours)
+    Message.new("Hi there @you, great to see you last night",Time.now - 5.3 * hours,"lepope"),
+    Message.new("@you great talk on Ruby, get in touch with Google HR!",Time.now - 8.1 * hours,"sbrin"),
+    Message.new("Ruby 2 is going to be great!",Time.now - 8.1 * hours,"matz")
   ])
 
   message_ui = MessageUi.new(tty,[
