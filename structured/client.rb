@@ -85,7 +85,7 @@ end
 
 def platforms_that_can capability
   # filter only platforms we can send messages on
-  sendable = PLATFORMS.select do |_,config|
+  PLATFORMS.select do |_,config|
     config["capabilities"].include? capability
   end
 end

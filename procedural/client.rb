@@ -2,6 +2,8 @@ require "set"
 require "color"
 include Color
 
+# DATA
+
 commands = {
   "feed" => {
     "description" => "Your feed",
@@ -43,9 +45,13 @@ platforms = {
   }  
 }
 
-loop do
 
-  puts colorize("Welcome to multi-message client 1.0",:blue)
+# PROGRAM
+
+puts colorize("Welcome to multi-message client 1.0",:blue)
+
+# main loop
+loop do
 
   puts "What would you like to do?"
 
