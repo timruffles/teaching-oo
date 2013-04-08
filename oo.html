@@ -2,7 +2,7 @@
 <head>
   
     <link rel="stylesheet" href="reveal/css/reveal.min.css">
-    <link rel="stylesheet" href="reveal/css/theme/default.css" id="theme">
+    <link rel="stylesheet" href="reveal/css/theme/general_assembly.css" id="theme">
 
     <!-- For syntax highlighting reveal/-->
     <link rel="stylesheet" href="reveal/lib/css/zenburn.css">
@@ -13,10 +13,14 @@
 <div class="reveal">
 <div class="slides">
 
-<section data-markdown class="first-page">
+<section data-markdown data-state=title>
 <script type="text/template">
 
-  #  Object-oriented programming
+  <h3 class="organisation">General Assembly</h3>
+
+  <h1>Object-oriented coding</h1>
+
+  <h2 class="lesson">Lesson 20</h2>
 
   <a href="http://twitter.com/{{ instructor_twitter }}">{{ instructor }}</a>
 
@@ -31,19 +35,23 @@
   <p>Data + instructions = programs</p>
 </section>
 
-<section data-markdown class="large-text"><script type="text/template">
+<section data-markdown><script type="text/template">
 
-  Computers are machines that perform one instruction at a time.
+  ## High level vs low level
 
-  We want to express things at a higher level than the machine.
+  - Computers are machines that perform one instruction at a time
+
+  - We think at a higher level than a machine
   
-  We want to write code at the level of our intentions.
+  - We want to write code closer to the level of our thought
+
+  - Programming languages have become increasingly high level over time
 
 </script></section>
 
 <section data-markdown ><script type="text/template">
 
-  ##  A chronology
+  ##  A chronology of styles
 
   1. Procedural code - lists of instructions with ways to jump to specific line
   1. Structured code - control structures & functions used to structure jumps
@@ -55,7 +63,8 @@
 
   ##  Procedural
 
-  We are at the level of the machine. We are providing every step (the how), and we use labels and commands to jump to a label.
+  - At the level of the machine.
+  - Provide every step (the how), and we use labels and commands to jump to a label.
 
   ```
   ; we've put currentTime in one register, and triggerAt in another
@@ -76,9 +85,8 @@
 
   ##  Structured
 
-  Common control structures like loops turned into language features.
-
-  Functions formalize 'go here, do this, and store result over there so I can get it' with paramters and return values.
+  - Common control structures like conditions & loops turned into language features.
+  - Functions formalise sub-procedures created with labels
 
   ```
   if(currentTime() >= alarmSetAt) {
@@ -93,9 +101,9 @@
 
   ##  Why did we move from procedural to structured?
 
-  Low-level - telling computer how to perform comparisons, a lot of work
+  - Low-level - telling computer how to perform comparisons, a lot of work
 
-  Unstructured - in 1000 line program, can jump to anywhere from anywhere
+  - Unstructured - in 1000 line program, can jump to anywhere from anywhere
 
 </script></section>
 
@@ -107,6 +115,8 @@
 
 <section data-markdown><script type="text/template">
 
+  ## Let's ask its inventor
+
   > The key in making great and growable systems 
   is to design how its modules communicate 
   > rather than what their internal properties and
@@ -116,13 +126,6 @@
 
 </script></section>
 
-<section data-markdown><script type="text/template">
-
-  > cells ... only able to communicate with messages
-
-  Alan Kay
-
-</script></section>
 
 <section data-markdown><script type="text/template">
 
@@ -145,8 +148,8 @@
   ##  More simply
 
   1. everything is an object
-  1. messaging,
-  1. local storage ... and hiding of state
+  1. communication via messages
+  1. local storage and hiding of data
 
 </script></section>
 
@@ -157,14 +160,16 @@
   True in Ruby, true(ish) in Javascript
 
   ```
-  (1).toString(); # js
-  null.toString() # typeError: Cannot call method 'toString' of null
-
   1.to_s()        # ruby
   nil.nil?        # true in ruby 
+  array.length()  # 3 - via a method call
+
+  (1).toString()  # Javascript
+  null.toString() # typeError: Cannot call method 'toString' of null
+  array.length    # 3 - via a property
   ```
 
-  Not in some languages, where strings, arrays & numbers are 'dumb data' (eg C)
+  Not true in languages where data like strings, arrays & numbers are 'dumb' (eg C)
 
   ```
   // get length of string
@@ -179,13 +184,21 @@
 
 <section data-markdown><script type="text/template">
 
+  > cells ... only able to communicate with messages
+
+  Alan Kay
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
   ##  Messaging
 
-  - Now data/behaviour is split into cells, send messages to get data
+  - Now data/behaviour is separated into cells, send messages to get data
 
-  - We communicate intentions, the receiver actually does it.
+  - We communicate only intentions, the receiver knows the 'how'
 
-  - Separation of knowledge & concerns - one only knows what it wants, not how it's done
+  - Separation of knowledge & concerns, each 'cell' has a single responsibility
 
 
 </script></section>
@@ -200,16 +213,21 @@
 
   - So `array.length` means "send :length to the array" and we get the response
 
+  ```
+  1.to_s()        # "1"
+  array.length()  # 3
+  ```
+
 </script></section>
 
 
 <section data-markdown><script type="text/template">
 
-  ##  Local storage & hiding of state
+  ##  Local storage & hiding of data
 
-  - State = how many points in game, friends on FB, much ££ in account
+  - Data or 'state' = how many points in game, friends on FB, much £ in account
 
-  - If every bit of the program can alter every bit of state, nightmare
+  - If every bit of the program can alter every bit of state, complex
 
   - Like cells, we have a 'cell wall' around bits of state, & others can only _ask_ to change via messages
 
@@ -220,14 +238,14 @@
 
   ##  Object oriented version of alarm
 
-  We send messages between objects.
+  - We send messages between objects.
 
-  Objects store data and define messages you can send them to change or view that data.
+  - Objects store data and define messages you can send them to change or view that data.
 
   ```
   class Alarm
     def hear time
-      trigger if time >= self.trigger_at
+      trigger if time >= @trigger_at
     end
   end
 
@@ -281,9 +299,9 @@
 
   ## First read the procedural & structured
 
-  - To see what problems Kay was solving
+  - To see what problems OO is solving
 
-  - NB the 'procedural' file is HOW NOT TO DO IT
+  - N.B the 'procedural' file is HOW NOT TO DO IT
 
   - Note the very low level, 'how to do it' flavour of procedural code
 
@@ -299,7 +317,7 @@
 
   ## Object orientation is a way of thinking
 
-  - It's possible to write procedural code in OO (but don't)
+  - It's possible to write procedural code in OO languages (but don't)
 
   - Just like you don't speak French with English grammar, it's not a great idea to write Ruby in a procedural style
 
@@ -312,6 +330,7 @@
   - We define classes of objects, then create instances of them
   - Titanic is an instance of the class `Film` (actually of `BadFilm`)
   - Think about the messages we need to deal with, & define methods
+  - e.g we'd like to get the `name` of the film, and ask if it's `bad?`
   - Each object can receive only messages defined in its class
 
 </script></section>
@@ -320,29 +339,31 @@
 
   ## Syntax
 
-  - `initialize` is sent to all fresh instances of our class
+  - `initialize` is sent to all fresh instances of our class, passed arguments of `new`
   - data hidden inside our object is stored in a variable prefixed with `@`
 
   ```
   class User
     def initialize(title, name)
+      # initialize is given arguments passed to new
       @title = title
       @name = name
     end
-    def formatted_name
+    def salutation
       "#{@title} #{@name}"
     end
   end
 
   matz = User.new("Mr","Matz")
-  puts(matz.formatted_name()) # "Mr Matz"
+  puts(matz.salutation()) # "Mr Matz"
+  matz.name # NoMethodError - can't get at name without a method
   ```
 
 </script></section>
 
 <section data-markdown><script type="text/template">
 
-  ## Syntax to goals
+  ## Goals to syntax
 
   - …define classes of objects…create instances of them
   - Titanic is an instance of the class `Film`
@@ -351,21 +372,30 @@
 
   ```ruby
   class Film
-    def initialize(is_called,awful)
-      @is_called = is_called
-      @awful = awful
+    def initialize(listing,rating)
+      @listing = listing
+      @rating = rating
     end
     def name
-      @is_called
+      @listing["name"]
     end
     def bad?
-      @awful
+      @rating < 5
     end
   end
-  titanic = BadFilm.new("titanic")
+  titanic = Film.new({"name"=>"titanic"},2)
   titanic.bad? # true
   ```
 
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Separation of concerns
+
+  - Our 'Film' class knows how to answer questions like `bad?`
+  - Our other code is just asking the question, so we change how `bad?` works without changing it
+  - The structure of our `listing` data is hidden behind Film's _interface_ (the messages it receives)
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -374,7 +404,7 @@
 
   - Inside the body of a method we are inside the object
   - Inside the object we can access its hidden data `@`
-  - So just like functions, methods are code we wish to run on demand
+  - Just like functions, methods are code we wish to run on demand (in response to messsage)
 
 </script></section>
 
@@ -396,6 +426,15 @@
   - First on syntax
   - Then we'll extend our Twitter/Email/FB client
   - System thinking
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## Homework
+
+  - Run `ruby run.rb extended --object-oriented`
+  - Follow prompts to add all features
 
 </script></section>
 
@@ -423,7 +462,7 @@
     overview: true,
 
     // Vertical centering of slides
-    center: true,
+    center: false,
 
     // Loop the presentation
     loop: false,
