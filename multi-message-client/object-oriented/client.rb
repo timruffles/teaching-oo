@@ -21,8 +21,11 @@ class Platform
     @name = name
     @capabilities = Set.new(capabilities)
   end
-  def send
-    puts "Sending by #{name}"
+  def name
+    @name
+  end
+  def send message
+    puts "Sending '#{message}' via #{@name}"
   end
   def can? ability
     @capabilities.include? ability
@@ -38,7 +41,7 @@ class OptionSet
     @options.keys
   end
   def choice flag
-    options[flags_to_commands[flag]]
+    @options[flags_to_commands[flag]]
   end
   def formatted_choices
     max_just = commands.map {|option| option.length }.max
@@ -49,12 +52,12 @@ class OptionSet
   end
   def flags_to_commands
     commands.inject({}) do |flags_to_values,command|
-      flags_to_values[command[0]] = command
+      flags_to_values[command[0].downcase] = command
       flags_to_values  
     end
   end
   def flags
-    flags_to_values.keys
+    flags_to_commands.keys
   end
   def valid? flag
     !!choice(flag)
@@ -65,7 +68,7 @@ class Ui
   def initialize tty
     @tty = tty
   end
-  def puts msg
+  def puts msg = ""
     @tty.puts msg
   end
   def gets
@@ -88,7 +91,7 @@ class Ui
 
 end
 
-class TopMenu < UI
+class TopMenuUi < Ui
   def initialize tty, commands
     @tty = tty
     @commands = commands
@@ -98,19 +101,7 @@ class TopMenu < UI
     welcome
 
     loop do
-
-      command = main_command tty
-      
-      puts "OK - #{command}"
-      choice = options.choice command
-
-      unless choice
-        colorize("Woops - I don't know how to '#{command}'",:red)
-        break
-      end
-
-      choice.run
-
+      main_command
     end
   end
   def welcome
@@ -125,7 +116,17 @@ class TopMenu < UI
       puts formatted
     end
    
-    terminal_read
+    command = terminal_read
+
+    choice = options.choice command
+
+    unless choice
+      colorize("Woops - I don't know how to '#{command}'",:red)
+      return
+    end
+
+    puts "OK - #{command}"
+    choice.call
   end
 end
 
@@ -138,7 +139,7 @@ class FeedUi < Ui
     # show feed
     puts
     puts "Your messages:"
-    FEED.each do |feed_item|
+    @feed.each do |feed_item|
       puts "#{feed_item.message} : #{colorize(feed_item.sent_at.to_s,:blue)}"
     end
     puts
@@ -146,25 +147,25 @@ class FeedUi < Ui
 end
 
 class MessageUi < Ui
-  def initialize tty, feed
+  def initialize tty, platforms
     @tty = tty
     @platforms = platforms
   end
   def call
     # capture message
     puts
-    message = ask(tty,"Enter message:")
+    message = ask(@tty,"Enter message:")
 
     puts colorize("Your message:",:blue) + " #{message}"
 
     loop do
 
-      platforms_to_names = platforms_that_can("write").inject do |by_name,platform|
+      platforms_to_names = platforms_that_can("write").reduce({}) do |by_name,platform|
         by_name[platform.name] = platform
         by_name
       end
 
-      options = OptionSet.new(platforms_to_names))
+      options = OptionSet.new(platforms_to_names)
 
       # how does user wish to send?
       puts "Send by: #{options.formatted_choices.join(", ")}"
@@ -181,7 +182,7 @@ class MessageUi < Ui
 
   def platforms_that_can capability
     # filter only platforms we can send messages on
-    platforms_that_can.select do |platform|
+    @platforms.select do |platform|
       platform.can? capability
     end
   end
@@ -201,21 +202,21 @@ def main tty
 
 
   message_ui = MessageUi.new(tty,[
-    Platform.new("twitter",["read","follow","write"]),
-    Platform.new("facebook",["read","follow","write"]),
-    Platform.new("rss",["read","follow"]),
-    Platform.new("email",["read","write"])
+    Platform.new("Twitter",["read","follow","write"]),
+    Platform.new("Facebook",["read","follow","write"]),
+    Platform.new("RSS",["read","follow"]),
+    Platform.new("Email",["read","write"])
   ])
 
-  TopMenuUi.new({
+  top_menu = TopMenuUi.new(
     tty,
     {
-      "Your feed" => feed_ui,
-      "Send message" => message_ui
+      "feed" => feed_ui,
+      "message" => message_ui
     }
-  })
+  )
 
-  TopMenuUi.call
+  top_menu.call
 end
 
 main(STDOUT)
